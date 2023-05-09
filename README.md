@@ -2,9 +2,9 @@
 
 This project is a simple chat application where two users, Alice and Rabbit, can send messages to each other. The chat history is saved in the browser's local storage, and a transcript of the chat can be viewed at a separate URL. The project is built using React, TypeScript, Jotai for state management, and Tailwind CSS for styling.
 
-![Rabbit Chat Interface](public/rabbit.jpg)
+![Rabbit Chat Interface](my-react-app/public/rabbit.jpg)
 
-![Chat Transcript](public/transcript.jpg)
+![Chat Transcript](my-react-app/public/transcript.jpg)
 
 ## Getting Started
 
