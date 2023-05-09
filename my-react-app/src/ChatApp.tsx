@@ -18,7 +18,13 @@ const ChatApp: React.FC<ChatAppProps> = ({ title, sender }) => {
   const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (inputValue) {
-      const newMessage = { id: Date.now().toString(), sender, content: inputValue };
+      const timestamp = new Date().toLocaleString();
+      const newMessage = {
+        id: Date.now().toString(),
+        sender,
+        content: inputValue,
+        timestamp,
+      };
       const updatedMessages = [...messages, newMessage];
       setMessages(updatedMessages);
       localStorage.setItem('messages', JSON.stringify(updatedMessages));
@@ -41,6 +47,7 @@ const ChatApp: React.FC<ChatAppProps> = ({ title, sender }) => {
               <div key={message.id}>
                 <div className="text-sm font-medium text-gray-900">{message.sender}:</div>
                 <div className="text-sm text-gray-600">{message.content}</div>
+                <div className="text-xs text-gray-400">{message.timestamp}</div>
               </div>
             ))}
           </div>
@@ -75,3 +82,4 @@ const ChatApp: React.FC<ChatAppProps> = ({ title, sender }) => {
 };
 
 export default ChatApp;
+
