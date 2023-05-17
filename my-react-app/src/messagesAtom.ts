@@ -25,8 +25,11 @@ export function atomMultiplex<Y>(getVar: (() => Y), setVar: ((_: Y) => void))
 export const mkAtomGS =
     (mutMessages: { current: Message[] }, localStorageKey: string) => atomMultiplex(
         // get
-        () =>
-            (JSON.parse(localStorage.getItem(localStorageKey) || "[]") as Message[]),
+        () => {
+            const ms = (JSON.parse(localStorage.getItem(localStorageKey) || "[]") as Message[])
+            mutMessages.current = ms;
+            return ms;
+        },
         // set
         (updatedMessages: Message[]) => {
             localStorage.setItem(localStorageKey, JSON.stringify(updatedMessages));

@@ -1,10 +1,25 @@
 import React, { useState } from 'react';
-import { atom, useAtom } from 'jotai';
+import { useAtom } from 'jotai';
 import { mkAtomGS, Message } from './messagesAtom';
 
-const messages: { current: Message[] } = { current: [] };
+// Note that global variables aren't normally a good idea, here we use it to synchronise React state with the outer world.
+// https://mariusschulz.com/blog/declaring-global-variables-in-typescript#declare-a-global-variable
+//declare var messages: { current: Message[] };
+type gMessagesT = { _current: Message[], current: Message[] };
+declare var gMessages: gMessagesT;
+((window as any).gMessages = {
+    _current: [],
+    get current() { return this._current; },
+    set current(value: Message[]) {
+        this._current = value;
+        // If we care to implement the spec, append data to a non-React DOM element here.
+        // For example, we could use "#external", which I've added to index.html.
+        console.log('messages.current = ', this._current);
+    }
+}) as gMessagesT;
+gMessages.current = [];
 
-const messagesAtom = mkAtomGS(messages, 'messages');
+const messagesAtom = mkAtomGS(gMessages, 'messages');
 
 interface ChatAppProps {
     title: string;
@@ -30,17 +45,13 @@ const ChatApp: React.FC<ChatAppProps> = ({ title, sender }) => {
                 timestamp,
             };
             const updatedMessages = [...messages, newMessage];
-            // Okay, but you use Jotai, which has localStorage backend.
-            // Doing it the way is done here is the easiest way to end up writing bugs.
             setMessages(updatedMessages);
-            localStorage.setItem('messages', JSON.stringify(updatedMessages));
             setInputValue('');
         }
     };
 
     const clearChat = () => {
         setMessages([]);
-        localStorage.setItem('messages', JSON.stringify([]));
     };
 
     return (
