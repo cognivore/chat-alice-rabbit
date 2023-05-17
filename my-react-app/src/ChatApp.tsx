@@ -1,36 +1,10 @@
 import React, { useState } from 'react';
 import { atom, useAtom } from 'jotai';
-import type { WritableAtom } from 'jotai';
-import { messagesAtom } from './messagesAtom';
-
-export function atomMultiplex<Y>(getVar: (() => Y), setVar: ((_: Y) => void))
-    : WritableAtom<Y, unknown[], unknown> {
-    const baseAtom = atom(getVar());
-
-    return atom(
-        (get) => get(baseAtom),
-        (get, set, update) => {
-            const newValue = typeof update === 'function' ? (update as Function)(get(baseAtom)) : update;
-            set(baseAtom, newValue);
-            setVar(newValue);
-        }
-    );
-}
-
-interface Message {
-    id: string, // Shouldn't be a string, nor should it be generated from Date! Collisions!
-    sender: string, // Probably shouldn't be a string, but for a prototype it's ok.
-    content: string, // Now this is a string.
-    timestamp: string // Timestamps are certainly not strings! That said, datetime in typescript is a tad sad.
-}
+import { mkAtomGS, Message } from './messagesAtom';
 
 const messages: { current: Message[] } = { current: [] };
 
-const atomGS = atomMultiplex(
-    () => (JSON.parse(localStorage.getItem('messages') || "[]") as Message[]), (updatedMessages: Message[]) => {
-        localStorage.setItem('messages', JSON.stringify(updatedMessages));
-        messages.current = updatedMessages;
-    });
+const messagesAtom = mkAtomGS(messages, 'messages');
 
 interface ChatAppProps {
     title: string;

@@ -1,13 +1,35 @@
 import { atom } from 'jotai';
+import type { WritableAtom } from 'jotai';
 
 export interface Message {
-  id: string;
-  sender: string;
-  content: string;
-  timestamp: string;
+    id: string, // Shouldn't be a string, nor should it be generated from Date! Collisions!
+    sender: string, // Probably shouldn't be a string, but for a prototype it's ok.
+    content: string, // Now this is a string.
+    timestamp: string // Timestamps are certainly not strings! That said, datetime in typescript is a tad sad.
 }
 
-const storedMessages = localStorage.getItem('messages');
-const initialMessages: Message[] = storedMessages ? JSON.parse(storedMessages) : [];
+export function atomMultiplex<Y>(getVar: (() => Y), setVar: ((_: Y) => void))
+    : WritableAtom<Y, unknown[], unknown> {
+    const baseAtom = atom(getVar());
 
-export const messagesAtom = atom<Message[]>(initialMessages);
+    return atom(
+        (get) => get(baseAtom),
+        (get, set, update) => {
+            const newValue = typeof update === 'function' ? (update as Function)(get(baseAtom)) : update;
+            set(baseAtom, newValue);
+            setVar(newValue);
+        }
+    );
+}
+
+export const mkAtomGS =
+    (mutMessages: { current: Message[] }, localStorageKey: string) => atomMultiplex(
+        // get
+        () =>
+            (JSON.parse(localStorage.getItem(localStorageKey) || "[]") as Message[]),
+        // set
+        (updatedMessages: Message[]) => {
+            localStorage.setItem(localStorageKey, JSON.stringify(updatedMessages));
+            mutMessages.current = updatedMessages;
+        });
+
